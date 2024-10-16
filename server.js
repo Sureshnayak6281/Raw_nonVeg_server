@@ -8,14 +8,15 @@ const category = require('./model/category');
 const product = require('./model/product')
 const { send } = require('process');
 const jwt = require('jsonwebtoken');
-const Order = require('./model/order')
-const Payment = require('./model/payment')
+const Order = require('./model/order');
+const Payment = require('./model/payment');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const Razorpay = require('razorpay');
 require('dotenv').config();
 
 const port = 5000;
+
 
 const app = express();
 app.use(express.json());
@@ -24,6 +25,18 @@ app.use(cors({
   origin: ['http://localhost:3000', 'https://preeminent-empanada-733ca8.netlify.app'],
   credentials: true
 }));
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://master--preeminent-empanada-733ca8.netlify.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.header('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  res.header('Access-Control-Allow-Credentials', true);
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 
 
 
