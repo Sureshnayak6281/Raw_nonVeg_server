@@ -22,7 +22,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: ['https://master--preeminent-empanada-733ca8.netlify.app/'],
+  origin: 'https://master--preeminent-empanada-733ca8.netlify.app/',
   credentials: true
 }));
 
