@@ -21,21 +21,37 @@ const port = 5000;
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+
+// CORS configuration
+const allowedOrigins = ['https://master--preeminent-empanada-733ca8.netlify.app', 'http://localhost:3000'];
+
 app.use(cors({
-  origin: 'https://master--preeminent-empanada-733ca8.netlify.app/',
-  credentials: true
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['X-Requested-With', 'Content-Type', 'Authorization']
 }));
 
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Origin', 'https://master--preeminent-empanada-733ca8.netlify.app');
-//   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-//   res.header('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-//   res.header('Access-Control-Allow-Credentials', true);
-//   if (req.method === 'OPTIONS') {
-//     return res.sendStatus(200);
-//   }
-//   next();
-// });
+// Additional CORS headers for flexibility
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', true);
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 
 
