@@ -207,10 +207,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/logout', (req, res) => {
-  res.clearCookie('token');
-  res.json({ message: 'Logged out successfully' });
-});
+
 
 const authenticateToken = (req, res, next) => {
   const tokenFromCookie = req.cookies.token;
@@ -253,6 +250,22 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
+
+app.post('/logout', authenticateToken, (req, res) => {
+  try {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/'
+    });
+
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'An error occurred during logout' });
+  }
+});
 
 // Example of a protected route
 app.get('/protected', authenticateToken, (req, res) => {
