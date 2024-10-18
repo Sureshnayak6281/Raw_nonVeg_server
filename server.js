@@ -198,7 +198,6 @@ app.post('/login', async (req, res) => {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 3600000,
-      domain: process.env.COOKIE_DOMAIN || undefined
     });
 
     res.json({ message: 'Logged in successfully', userdata, token });
@@ -215,22 +214,42 @@ app.post('/logout', (req, res) => {
 
 const authenticateToken = (req, res, next) => {
   const tokenFromCookie = req.cookies.token;
-  const tokenFromHeader = req.headers['authorization']?.split(' ')[1];
+  const authHeader = req.headers['authorization'];
+  
+  let tokenFromHeader;
+  if (authHeader) {
+    if (authHeader.startsWith('Bearer ')) {
+      tokenFromHeader = authHeader.substring(7);
+    } else if (authHeader.startsWith('Bearer')) {
+      tokenFromHeader = authHeader.substring(6);
+    }
+  }
+  
   const token = tokenFromCookie || tokenFromHeader;
 
-  console.log('Received token:', token);
+  console.log('Cookie token:', tokenFromCookie);
+  console.log('Auth header:', authHeader);
+  console.log('Header token:', tokenFromHeader);
+  console.log('Final token:', token);
 
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res.status(401).json({ message: 'No token provided' });
   }
 
-  jwt.verify(token, secretKey, (err, user) => {
+  jwt.verify(token, secretKey, (err, decoded) => {
     if (err) {
-      console.log('Token verification error:', err);
-      return res.status(403).json({ message: 'Forbidden' });
+      console.error('Token verification error:', err.name);
+      
+      if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({ message: 'Token expired' });
+      } else if (err.name === 'JsonWebTokenError') {
+        return res.status(403).json({ message: 'Invalid token' });
+      } else {
+        return res.status(403).json({ message: 'Token verification failed' });
+      }
     }
-    req.user = user;
-    console.log('Verified user:', user);
+    
+    req.user = decoded;
     next();
   });
 };
