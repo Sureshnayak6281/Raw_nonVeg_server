@@ -189,7 +189,8 @@ app.post('/login', async (req, res) => {
       verified: user.verified
     }
 
-    const token = jwt.sign(userdata, secretKey, { expiresIn: '1h' });
+    const token = jwt.sign(userdata, secretKey, { expiresIn: '24h' });
+    console.log('Generated token:', token);
 
     // Set HTTP-only cookie
     res.cookie('token', token, {
@@ -214,8 +215,9 @@ app.post('/logout', (req, res) => {
 const authenticateToken = (req, res, next) => {
   const tokenFromCookie = req.cookies.token;
   const tokenFromHeader = req.headers['authorization']?.split(' ')[1];
-  const token = tokenFromCookie || tokenFromHeader; 
-  
+  const token = tokenFromCookie || tokenFromHeader;
+
+  console.log('Received token:', token);
 
   if (!token) {
     return res.status(401).json({ message: 'Unauthorized' });
@@ -223,9 +225,11 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, secretKey, (err, user) => {
     if (err) {
+      console.log('Token verification error:', err);
       return res.status(403).json({ message: 'Forbidden' });
     }
     req.user = user;
+    console.log('Verified user:', user);
     next();
   });
 };
