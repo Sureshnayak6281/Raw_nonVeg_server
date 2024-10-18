@@ -197,7 +197,8 @@ app.post('/login', async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 3600000 //
+      maxAge: 3600000,
+      domain: process.env.COOKIE_DOMAIN || undefined
     });
 
     res.json({ message: 'Logged in successfully', userdata, token });
