@@ -199,7 +199,7 @@ app.post('/login', async (req, res) => {
       maxAge: 3600000 //
     });
 
-    res.json({ message: 'Logged in successfully', userdata });
+    res.json({ message: 'Logged in successfully', userdata, token });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).send('Error logging in');
@@ -212,7 +212,10 @@ app.post('/logout', (req, res) => {
 });
 
 const authenticateToken = (req, res, next) => {
-  const token = req.cookies.token;
+  const tokenFromCookie = req.cookies.token;
+  const tokenFromHeader = req.headers['authorization']?.split(' ')[1];
+  const token = tokenFromCookie || tokenFromHeader; 
+  
 
   if (!token) {
     return res.status(401).json({ message: 'Unauthorized' });
@@ -286,13 +289,12 @@ app.get('/cartGet', authenticateToken, async (req, res) => {
 
     const items = cart.orderDetailsMap || new Map();
 
-    // Convert Map to an array of its values
     const totalQuantity = Array.from(items.values()).reduce((sum, item) => sum + (item.quantity || 0), 0);
 
     return res.status(200).json({
       message: "Cart items fetched successfully",
-      items: Object.fromEntries(items), // Convert Map back to object if needed in response
-      totalQuantity: totalQuantity // Add total quantity to the response
+      items: Object.fromEntries(items), 
+      totalQuantity: totalQuantity 
     });
   } catch (error) {
     console.error('Error fetching cart:', error);
